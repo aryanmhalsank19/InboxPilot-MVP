@@ -1,8 +1,8 @@
-# 🤖 InboxPilot - AI-Powered Email Management System
+# InboxPilot - AI-Powered Email Management System (qRaptor)
 
 > **Transform your email experience with intelligent automation**
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#-overview)
 - [Key Features](#-key-features)
@@ -551,21 +551,6 @@ Enterprise: {
 - Customer Lifetime Value (CLV)
 - Churn rate by tier
 - Support ticket volume
-```
-
-### Success Metrics
-```javascript
-// MVP Success Criteria
-- 1,000 beta users within 3 months
-- 85%+ user satisfaction score
-- 30%+ time savings demonstrated
-- 90%+ AI accuracy for summaries
-- <2s average response time
-
-// Growth Targets
-Year 1: 10,000 users, $50K MRR
-Year 2: 100,000 users, $500K MRR
-Year 3: 500,000 users, $2.5M MRR
 ```
 
 ## 🔒 Security & Privacy
