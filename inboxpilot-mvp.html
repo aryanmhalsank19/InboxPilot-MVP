@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InboxPilot - AI Email Assistant MVP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        .demo-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: normal;
+            margin-left: 0.5rem;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            background: #f9fafb;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .ai-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 140px);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .filter-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .filter-item:hover {
+            background: #f1f5f9;
+            transform: translateX(2px);
+        }
+
+        .filter-item.active {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .filter-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .count-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+        }
+
+        .ai-insights {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
+            border: 1px solid #c4b5fd;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .ai-insights h4 {
+            color: #7c3aed;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-item {
+            font-size: 0.8rem;
+            color: #4c1d95;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .email-list {
+            flex: 1;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .email-list-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fafbfc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .bulk-btn {
+            padding: 0.25rem 0.5rem;
+            background: #f1f5f9;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bulk-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .email-item {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .email-item:hover {
+            background: #f8fafc;
+            transform: translateX(4px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .email-item.selected {
+            background: #eff6ff;
+            border-right: 4px solid #3b82f6;
+            transform: translateX(0);
+        }
+
+        .email-item.unread {
+            background: #fefffe;
+            font-weight: 600;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .email-item.priority {
+            border-left: 4px solid #ef4444;
+        }
+
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .email-sender {
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sender-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .email-time {
+            font-size: 0.8rem;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+
+        .email-subject {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .email-snippet {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .tag {
+            padding: 0.25rem 0.6rem;
+            font-size: 0.75rem;
+            border-radius: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .tag.priority { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .tag.work { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+        .tag.personal { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+        .tag.promotion { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .tag.ai-summary { 
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); 
+            color: #9333ea; 
+            border: 1px solid #e9d5ff;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .email-detail {
+            width: 450px;
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .detail-placeholder {
+            text-align: center; 
+            padding: 4rem 2rem; 
+            color: #64748b;
+        }
+
+        .detail-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fafbfc;
+        }
+
+        .detail-sender {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .detail-subject {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .detail-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .ai-section {
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            border: 1px solid #e9d5ff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1.5rem;
+            position: relative;
+        }
+
+        .ai-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 0.75rem;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .ai-section h4 {
+            color: #7c3aed;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-badge {
+            background: #7c3aed;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+        }
+
+        .ai-summary {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border: 1px solid #e9d5ff;
+            position: relative;
+        }
+
+        .ai-summary::before {
+            content: '💡';
+            position: absolute;
+            top: -8px;
+            right: 10px;
+            background: white;
+            padding: 0 0.5rem;
+        }
+
+        .sentiment-analysis {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .sentiment-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e9d5ff;
+            font-size: 0.8rem;
+        }
+
+        .sentiment-score {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .urgency-high { color: #ef4444; }
+        .urgency-medium { color: #f59e0b; }
+        .urgency-low { color: #10b981; }
+
+        .quick-replies {
+            margin-top: 1rem;
+        }
+
+        .quick-replies-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .generate-more {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .generate-more:hover {
+            background: #6d28d9;
+        }
+
+        .reply-suggestion {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.875rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .reply-suggestion:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .reply-tone {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 0.7rem;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .email-content {
+            padding: 1.5rem;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            background: #fafbfc;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .demo-tooltip {
+            position: fixed;
+            background: #1f2937;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .demo-tooltip.show {
+            opacity: 1;
+        }
+
+        .feature-highlight {
+            position: relative;
+        }
+
+        .feature-highlight::after {
+            content: 'NEW';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .stat-number {
+            font-weight: bold;
+            color: #7c3aed;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .email-detail {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-bar {
+                margin: 0;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-banner">
+        🚀 <strong>InboxPilot MVP Demo</strong> - AI-Powered Email Management System | Click emails to explore AI features
+    </div>
+
+    <div class="header">
+        <div class="logo">
+            <span>🤖</span>
+            InboxPilot
+            <span class="logo-subtitle">Smart Email Assistant</span>
+        </div>
+        <div class="search-bar">
+            <div class="search-icon">🔍</div>
+            <input type="text" class="search-input" placeholder="Search emails by sender, subject, or content..." id="searchInput">
+        </div>
+        <div class="ai-status">
+            <span>🟢</span>
+            AI Assistant Active
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>📁 Email Categories</h3>
+                <div class="filter-item active" data-filter="all">
+                    <div class="filter-left">
+                        <span class="filter-icon">📧</span>
+                        <span>All Emails</span>
+                    </div>
+                    <span class="count-badge">12</span>
+                </div>
+                <div class="filter-item" data-filter="unread">
+                    <div class="filter-left">
+                        <span class="filter-icon">🔵</span>
+                        <span>Unread</span>
+                    </div>
+                    <span class="count-badge">4</span>
+                </div>
+                <div class="filter-item feature-highlight" data-filter="priority">
+                    <div class="filter-left">
+                        <span class="filter-icon">🔥</span>
+                        <span>Priority</span>
+                    </div>
+                    <span class="count-badge">3</span>
+                </div>
+                <div class="filter-item" data-filter="work">
+                    <div class="filter-left">
+                        <span class="filter-icon">💼</span>
+                        <span>Work</span>
+                    </div>
+                    <span class="count-badge">6</span>
+                </div>
+                <div class="filter-item" data-filter="personal">
+                    <div class="filter-left">
+                        <span class="filter-icon">👤</span>
+                        <span>Personal</span>
+                    </div>
+                    <span class="count-badge">3</span>
+                </div>
+                <div class="filter-item" data-filter="promotion">
+                    <div class="filter-left">
+                        <span class="filter-icon">🏷️</span>
+                        <span>Promotions</span>
+                    </div>
+                    <span class="count-badge">2</span>
+                </div>
+            </div>
+
+            <div class="ai-insights">
+                <h4>🧠 AI Insights <span class="ai-badge">SMART</span></h4>
+                <div class="insight-item">
+                    <span>⚡</span> 3 urgent emails need attention
+                </div>
+                <div class="insight-item">
+                    <span>📈</span> 40% faster email processing
+                </div>
+                <div class="insight-item">
+                    <span>🎯</span> 95% accurate categorization
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">2.3 min</div>
+                        <div>Avg. Response Time</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">89%</div>
+                        <div>AI Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="email-list">
+            <div class="email-list-header">
+                <span id="emailCount">12 emails</span>
+                <div class="bulk-actions">
+                    <button class="bulk-btn">Select All</button>
+                    <button class="bulk-btn">Mark Read</button>
+                    <button class="bulk-btn">Archive</button>
+                </div>
+            </div>
+            <div id="emailList">
+                <!-- Emails populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="email-detail" id="emailDetail">
+            <div class="detail-placeholder">
+                <span style="font-size: 4rem;">🤖📧</span>
+                <h3 style="margin: 1rem 0; color: #3b82f6;">Welcome to InboxPilot!</h3>
+                <p style="margin-bottom: 1rem;"><strong>Select an email to see AI magic in action:</strong></p>
+                <ul style="text-align: left; margin: 1rem 0; color: #64748b;">
+                    <li>🧠 Intelligent email summaries</li>
+                    <li>⚡ Smart quick reply suggestions</li>
+                    <li>🎯 Automatic priority detection</li>
+                    <li>📊 Sentiment analysis</li>
+                    <li>🏷️ Auto-categorization</li>
+                </ul>
+                <p style="font-size: 0.9rem; color: #64748b;">
+                    <em>This is a fully interactive demo showcasing AI-powered email management</em>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-tooltip" id="tooltip"></div>
+
+    <script>
+        // Enhanced mock email data with more detailed content
+        const mockEmails = [
+            {
+                id: 1,
+                sender: "Sarah Chen",
+                email: "sarah.chen@techcorp.com",
+                subject: "Q4 Budget Review Meeting - Action Items & Next Steps",
+                snippet: "Following up on yesterday's meeting, here are the key action items we discussed for the budget review. We need to finalize several deliverables by end of week...",
+                time: "2h ago",
+                content: `Hi Team,
+
+Following up on yesterday's Q4 budget review meeting, here are the key action items we discussed:
+
+**Immediate Actions (Due Friday, Dec 15th):**
+1. Marketing team to provide revised campaign budget proposals
+2. IT department to submit hardware upgrade cost estimates 
+3. HR to finalize headcount projections for Q1 2024
+
+**Key Discussion Points:**
+- 15% budget increase approved for digital marketing initiatives
+- New hiring freeze in effect until January 2024
+- Cloud infrastructure costs exceeded projections by 12%
+
+**Next Meeting:** Monday, Dec 18th at 2:00 PM in Conference Room B
+
+Please let me know if you have any questions or need clarification on any of these items. The success of our Q4 planning depends on timely completion of these deliverables.
+
+Best regards,
+Sarah Chen
+VP of Operations`,
+                tags: ["work", "priority"],
+                unread: true,
+                aiSummary: "Family dinner Sunday 6 PM. Mom requests Caesar salad + garlic bread. Dad making lasagna, sister bringing tiramisu. Cousin Mike visiting from Portland. RSVP needed by Saturday.",
+                urgency: "medium",
+                sentiment: "loving",
+                keyPoints: ["Sunday 6 PM dinner", "Bring Caesar salad", "RSVP by Saturday"],
+                estimatedReadTime: "1 min"
+            },
+            {
+                id: 4,
+                sender: "GitHub Security",
+                email: "security@github.com",
+                subject: "🔒 Security Alert: New device signed into your account",
+                snippet: "A new device has signed into your GitHub account from San Francisco, CA. If this was you, you can disregard this message. If not, please take immediate action...",
+                time: "8h ago",
+                content: `Hi there,
+
+We detected a new sign-in to your GitHub account and wanted to make sure it was you.
+
+**Sign-in Details:**
+• Device: Chrome 119.0 on macOS 14.1
+• Location: San Francisco, CA, United States
+• IP Address: 192.168.1.xxx (masked for security)
+• Time: December 12, 2023 at 2:30 PM PST
+• User Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)
+
+**Account Activity:**
+• Repositories accessed: 3
+• Last action: Pushed to main branch in 'ai-email-assistant'
+• Two-factor authentication: ✅ Successfully verified
+
+**If this was you:**
+You can safely disregard this message. Your account remains secure.
+
+**If this wasn't you:**
+1. Change your password immediately
+2. Review your authorized applications
+3. Check recent repository activity
+4. Consider enabling additional security measures
+
+**Security Recommendations:**
+- Use a unique, strong password
+- Enable two-factor authentication (already enabled ✅)
+- Regularly review authorized OAuth applications
+- Monitor account activity notifications
+
+Stay secure,
+The GitHub Security Team
+
+Need help? Visit our Security Center: https://github.com/security`,
+                tags: ["work", "priority"],
+                unread: false,
+                aiSummary: "Security alert: New device login from San Francisco at 2:30 PM. Chrome on macOS, accessed 3 repos, pushed to 'ai-email-assistant'. 2FA verified. Action needed if unauthorized.",
+                urgency: "high",
+                sentiment: "urgent",
+                keyPoints: ["New device SF login", "2FA verified", "Check if unauthorized"],
+                estimatedReadTime: "2 min"
+            },
+            {
+                id: 5,
+                sender: "Amazon",
+                email: "shipment-tracking@amazon.com",
+                subject: "📦 Your order has been delivered - How was your experience?",
+                snippet: "Great news! Your recent order has been delivered to your address. We hope you're happy with your purchase and would love your feedback...",
+                time: "1d ago",
+                content: `Hi there!
+
+Great news! Your recent order has been successfully delivered.
+
+**Delivery Confirmation:**
+• Order #: 123-4567890-1234567
+• Delivered: December 11, 2023 at 3:45 PM
+• Location: Front door (as requested)
+• Delivery method: Amazon Logistics
+
+**Items Delivered:**
+1. MacBook Pro Aluminum Stand - Space Gray
+   • Adjustable height laptop stand
+   • Price: $89.99
+
+2. Logitech MX Master 3S Wireless Mouse
+   • Advanced wireless mouse with USB-C
+   • Price: $129.99
+
+**Total Order Value:** $219.98
+**You Saved:** $35.00 with Prime member discounts
+
+**Rate Your Experience:**
+How was your delivery experience? Your feedback helps us improve our service.
+⭐⭐⭐⭐⭐ Rate this delivery
+
+**Need Help?**
+• Return or exchange items (30-day window)
+• Track other orders
+• Contact customer service
+
+**What's Next?**
+• Set up your new devices
+• Leave product reviews to help other customers
+• Check out recommended accessories
+
+Thanks for choosing Amazon Prime!
+
+The Amazon Team
+
+P.S. Your next delivery (wireless charger) is arriving tomorrow!`,
+                tags: ["personal"],
+                unread: false,
+                aiSummary: "Amazon delivery confirmation: MacBook stand ($89.99) and Logitech mouse ($129.99) delivered to front door at 3:45 PM. Total saved $35 with Prime. Next delivery tomorrow.",
+                urgency: "low",
+                sentiment: "positive",
+                keyPoints: ["$219.98 order delivered", "$35 Prime savings", "Next delivery tomorrow"],
+                estimatedReadTime: "1 min"
+            },
+            {
+                id: 6,
+                sender: "LinkedIn Jobs",
+                email: "jobs-noreply@linkedin.com",
+                subject: "🚀 5 new job opportunities match your profile perfectly",
+                snippet: "We found some exciting job opportunities that align with your skills and experience. These companies are actively hiring and looking for candidates like you...",
+                time: "2d ago",
+                content: `Hi there!
+
+We found some exciting job opportunities that align with your skills, experience, and career goals:
+
+**🎯 RECOMMENDED FOR YOU**
+
+**1. Senior Frontend Developer - TechCorp Inc.**
+• Location: San Francisco, CA (Remote options available)
+• Salary: $140,000 - $180,000
+• Skills match: React, TypeScript, Node.js ✅
+• 500+ applicants | Posted 3 days ago
+
+**2. UI/UX Designer - StartupXYZ**
+• Location: New York, NY (Hybrid)
+• Salary: $110,000 - $140,000  
+• Skills match: Figma, Design Systems, Prototyping ✅
+• 200+ applicants | Posted 5 days ago
+
+**3. Product Manager - InnovateCo**
+• Location: Austin, TX (Remote)
+• Salary: $130,000 - $160,000
+• Skills match: Product Strategy, Analytics, Agile ✅
+• 300+ applicants | Posted 1 week ago
+
+**4. Full Stack Engineer - DevStudio**
+• Location: Seattle, WA
+• Salary: $120,000 - $150,000
+• Skills match: Python, AWS, Docker ✅
+• 150+ applicants | Posted 4 days ago
+
+**5. Design Lead - CreativeAgency**
+• Location: Los Angeles, CA
+• Salary: $150,000 - $190,000
+• Skills match: Team Leadership, Creative Direction ✅
+• 100+ applicants | Posted 2 days ago
+
+**💡 Job Search Tips:**
+• Optimize your LinkedIn profile (75% complete)
+• Add recent projects to showcase your work
+• Network with employees at target companies
+• Set up job alerts for your preferred roles
+
+**Your Job Search Stats:**
+• Profile views this week: 47
+• Search appearances: 23
+• Companies viewed your profile: 12
+
+Ready to take the next step in your career?
+
+Best of luck!
+The LinkedIn Jobs Team`,
+                tags: ["work"],
+                unread: false,
+                aiSummary: "5 job matches: Senior Frontend Dev ($140-180K SF), UI/UX Designer ($110-140K NYC), Product Manager ($130-160K Austin), Full Stack Engineer ($120-150K Seattle), Design Lead ($150-190K LA). Profile 75% complete.",
+                urgency: "medium",
+                sentiment: "encouraging",
+                keyPoints: ["5 high-paying job matches", "Remote options available", "Profile needs optimization"],
+                estimatedReadTime: "3 min"
+            },
+            {
+                id: 7,
+                sender: "Dr. Emily Watson",
+                email: "appointments@healthcenter.com",
+                subject: "📅 Appointment Reminder - Annual Checkup Tomorrow",
+                snippet: "This is a friendly reminder about your annual health checkup appointment scheduled for tomorrow. Please arrive 15 minutes early to complete paperwork...",
+                time: "1d ago",
+                content: `Dear Patient,
+
+This is a friendly reminder about your upcoming appointment:
+
+**Appointment Details:**
+• Date: Thursday, December 14, 2023
+• Time: 10:30 AM - 11:30 AM
+• Provider: Dr. Emily Watson, MD
+• Type: Annual Physical Examination
+• Location: HealthCenter Main Building, Room 205
+
+**Please Bring:**
+• Photo identification
+• Insurance card
+• List of current medications
+• Any recent lab results or medical records
+
+**Preparation Instructions:**
+• Arrive 15 minutes early for check-in
+• Fast for 12 hours before appointment (for blood work)
+• Wear comfortable, loose-fitting clothing
+• Bring a list of questions or health concerns
+
+**What to Expect:**
+- Vital signs measurement
+- Blood pressure and heart rate check
+- Basic blood work and urinalysis
+- Discussion of health history and lifestyle
+- Preventive care recommendations
+
+**Appointment Policies:**
+• Cancellation required 24 hours in advance
+• Late arrivals may need to reschedule
+• Copay due at time of service: $30
+
+**Need to Reschedule?**
+Call us at (555) 123-4567 or use our patient portal.
+
+Looking forward to seeing you tomorrow!
+
+Best regards,
+HealthCenter Administrative Team`,
+                tags: ["personal", "priority"],
+                unread: true,
+                aiSummary: "Doctor appointment reminder: Tomorrow 10:30 AM with Dr. Watson for annual checkup. Arrive 15 min early, fast 12 hours, bring ID/insurance. $30 copay due.",
+                urgency: "high",
+                sentiment: "professional",
+                keyPoints: ["Tomorrow 10:30 AM", "Fast 12 hours", "$30 copay"],
+                estimatedReadTime: "2 min"
+            },
+            {
+                id: 8,
+                sender: "Spotify",
+                email: "support@spotify.com",
+                subject: "🎵 Your 2023 Wrapped is ready! Plus new features",
+                snippet: "Your personalized 2023 music journey is here! Discover your top artists, songs, and listening habits, plus check out our new AI DJ feature...",
+                time: "3d ago",
+                content: `Hey Music Lover! 🎧
+
+Your Spotify Wrapped 2023 is finally here, and it's packed with insights about your musical year!
+
+**🎵 YOUR 2023 HIGHLIGHTS:**
+• Total minutes listened: 47,832 (that's 798 hours!)
+• Top genre: Indie Alternative
+• Most played artist: Arctic Monkeys
+• Song of the year: "Do I Wanna Know?" - Arctic Monkeys
+• Discovery score: 8.5/10 (you're an explorer!)
+
+**📊 LISTENING HABITS:**
+• Peak listening time: 3-6 PM (afternoon vibes!)
+• Favorite day for music: Friday
+• Most diverse month: July 2023
+• Countries represented in your playlist: 23
+
+**🎉 NEW FEATURES TO TRY:**
+• AI DJ - Let AI curate perfect playlists for you
+• Blend playlists - Create shared playlists with friends
+• Enhanced lyrics - Real-time lyrics with translations
+• Spotify for Podcasters - Create your own podcast
+
+**🎁 SPECIAL OFFERS:**
+• 3 months free Premium for new subscribers
+• Limited edition Wrapped merchandise available
+• Concert presale access for top artists
+
+**Share Your Wrapped:**
+Show off your music taste on social media and see how you compare with friends!
+
+Keep discovering new music!
+The Spotify Team 🎼`,
+                tags: ["promotion", "personal"],
+                unread: false,
+                aiSummary: "Spotify Wrapped 2023: 47,832 minutes listened, top genre Indie Alternative, Arctic Monkeys most played. New AI DJ feature available. 3 months free Premium offer.",
+                urgency: "low",
+                sentiment: "exciting",
+                keyPoints: ["798 hours music listened", "Arctic Monkeys top artist", "AI DJ feature launched"],
+                estimatedReadTime: "2 min"
+            }
+        ];
+
+        // Enhanced AI-generated quick reply suggestions with tone indicators
+        const quickReplies = {
+            1: [
+                { text: "Thanks Sarah! I'll coordinate with my team on the marketing budget revisions and have the proposal ready by Friday.", tone: "professional" },
+                { text: "Received. Quick question - do we need detailed cost breakdowns for the IT hardware estimates?", tone: "collaborative" },
+                { text: "Can we schedule a brief call Thursday to discuss the headcount projections? I have some concerns about the timeline.", tone: "proactive" }
+            ],
+            2: [
+                { text: "Thanks for the recommendations! I'm excited to check out The Crown finale tonight.", tone: "friendly" },
+                { text: "Please update my preferences - I'm more interested in documentaries and less in romantic comedies.", tone: "direct" },
+                { text: "Love the new AI features! The personalized recommendations are spot-on.", tone: "enthusiastic" }
+            ],
+            3: [
+                { text: "Yes, I'll be there! I'll bring my famous Caesar salad and some homemade garlic bread. Can't wait to see everyone! ❤️", tone: "warm" },
+                { text: "Sorry Mom, I can't make it this Sunday due to a work commitment. Can we reschedule for the following weekend?", tone: "apologetic" },
+                { text: "Looking forward to it! Should I bring anything else? Also, excited to meet cousin Mike and hear about Portland!", tone: "enthusiastic" }
+            ],
+            4: [
+                { text: "Yes, this was me working on the AI email assistant project. Thanks for the security notification - appreciate the diligence!", tone: "confirmatory" },
+                { text: "I don't recognize this login activity. Please help me secure my account immediately and review recent repository access.", tone: "urgent" },
+                { text: "Can you provide more details about which repositories were accessed during this session?", tone: "investigative" }
+            ],
+            5: [
+                { text: "Perfect delivery as always! Both items arrived in excellent condition. The laptop stand is exactly what I needed.", tone: "satisfied" },
+                { text: "Great service! Quick question - when will the wireless charger arrive tomorrow? I'll be working from home.", tone: "practical" },
+                { text: "Thank you for the smooth delivery. I'd like to leave a 5-star review - where can I do that?", tone: "appreciative" }
+            ],
+            6: [
+                { text: "Thanks for the matches! I'm particularly interested in the Senior Frontend Developer position at TechCorp. Can you help me connect?", tone: "interested" },
+                { text: "Please adjust my job search preferences - I'm specifically looking for remote-first companies with strong engineering culture.", tone: "specific" },
+                { text: "The recommendations look great! Can you send me insights on salary negotiations for these types of roles?", tone: "strategic" }
+            ],
+            7: [
+                { text: "Thank you for the reminder! I'll be there at 10:15 AM tomorrow. I've been fasting since 10 PM last night as instructed.", tone: "confirming" },
+                { text: "I need to reschedule my appointment due to a family emergency. What's the earliest available slot next week?", tone: "urgent" },
+                { text: "Quick question - can I take my regular vitamins this morning, or should I avoid all supplements during the fasting period?", tone: "clarifying" }
+            ],
+            8: [
+                { text: "Wow! 798 hours of music - I had no idea I listened that much! Arctic Monkeys dominating my year makes perfect sense 🎵", tone: "amazed" },
+                { text: "Love the Wrapped insights! Definitely interested in trying the new AI DJ feature. How do I access it?", tone: "curious" },
+                { text: "Thanks for the 3-month Premium offer! I've been considering upgrading. Does this apply to existing free users?", tone: "interested" }
+            ]
+        };
+
+        let currentFilter = 'all';
+        let selectedEmailId = null;
+        let isGeneratingReplies = false;
+
+        // Initialize the app
+        function init() {
+            renderEmailList();
+            setupEventListeners();
+            updateStats();
+        }
+
+        // Update statistics and insights
+        function updateStats() {
+            const unreadCount = mockEmails.filter(e => e.unread).length;
+            const priorityCount = mockEmails.filter(e => e.tags.includes('priority')).length;
+            const workCount = mockEmails.filter(e => e.tags.includes('work')).length;
+            const personalCount = mockEmails.filter(e => e.tags.includes('personal')).length;
+            const promotionCount = mockEmails.filter(e => e.tags.includes('promotion')).length;
+
+            // Update sidebar counts
+            document.querySelector('[data-filter="all"] .count-badge').textContent = mockEmails.length;
+            document.querySelector('[data-filter="unread"] .count-badge').textContent = unreadCount;
+            document.querySelector('[data-filter="priority"] .count-badge').textContent = priorityCount;
+            document.querySelector('[data-filter="work"] .count-badge').textContent = workCount;
+            document.querySelector('[data-filter="personal"] .count-badge').textContent = personalCount;
+            document.querySelector('[data-filter="promotion"] .count-badge').textContent = promotionCount;
+        }
+
+        // Render email list based on current filter
+        function renderEmailList() {
+            const emailList = document.getElementById('emailList');
+            const filteredEmails = filterEmails(mockEmails, currentFilter);
+            
+            document.getElementById('emailCount').textContent = `${filteredEmails.length} emails`;
+            
+            if (filteredEmails.length === 0) {
+                emailList.innerHTML = '<div style="text-align: center; padding: 3rem; color: #64748b;"><span style="font-size: 2rem;">📭</span><br><br>No emails found<br><small>Try adjusting your filters or search terms</small></div>';
+                return;
+            }
+
+            emailList.innerHTML = filteredEmails.map(email => {
+                const avatarLetter = email.sender.charAt(0).toUpperCase();
+                const avatarColor = getAvatarColor(email.sender);
+                
+                return `
+                    <div class="email-item ${email.unread ? 'unread' : ''} ${email.tags.includes('priority') ? 'priority' : ''} ${selectedEmailId === email.id ? 'selected' : ''}" 
+                         data-id="${email.id}">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <div class="sender-avatar" style="background: ${avatarColor};">
+                                    ${avatarLetter}
+                                </div>
+                                <div>
+                                    <div>${email.sender}</div>
+                                    <div style="font-size: 0.75rem; font-weight: normal; color: #64748b;">${email.email}</div>
+                                </div>
+                            </div>
+                            <div class="email-time">
+                                <div>${email.time}</div>
+                                <div style="font-size: 0.7rem; color: #64748b;">${email.estimatedReadTime}</div>
+                            </div>
+                        </div>
+                        <div class="email-subject">${email.subject}</div>
+                        <div class="email-snippet">${email.snippet}</div>
+                        <div class="tags">
+                            ${email.tags.map(tag => `<span class="tag ${tag}">
+                                ${getTagIcon(tag)} ${capitalizeFirst(tag)}
+                            </span>`).join('')}
+                            <span class="tag ai-summary">
+                                🤖 AI Summary
+                            </span>
+                            <span class="tag" style="background: ${getUrgencyColor(email.urgency)}; color: white; font-size: 0.7rem;">
+                                ${email.urgency.toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get avatar color based on sender name
+        function getAvatarColor(sender) {
+            const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
+            const index = sender.charCodeAt(0) % colors.length;
+            return colors[index];
+        }
+
+        // Get tag icon
+        function getTagIcon(tag) {
+            const icons = {
+                priority: '🔥',
+                work: '💼',
+                personal: '👤',
+                promotion: '🏷️'
+            };
+            return icons[tag] || '📧';
+        }
+
+        // Get urgency color
+        function getUrgencyColor(urgency) {
+            const colors = {
+                high: '#ef4444',
+                medium: '#f59e0b',
+                low: '#10b981'
+            };
+            return colors[urgency] || '#64748b';
+        }
+
+        // Filter emails based on category
+        function filterEmails(emails, filter) {
+            switch (filter) {
+                case 'all':
+                    return emails;
+                case 'unread':
+                    return emails.filter(email => email.unread);
+                case 'priority':
+                    return emails.filter(email => email.tags.includes('priority'));
+                case 'work':
+                    return emails.filter(email => email.tags.includes('work'));
+                case 'personal':
+                    return emails.filter(email => email.tags.includes('personal'));
+                case 'promotion':
+                    return emails.filter(email => email.tags.includes('promotion'));
+                default:
+                    return emails;
+            }
+        }
+
+        // Search emails
+        function searchEmails(query) {
+            if (!query) {
+                renderEmailList();
+                return;
+            }
+
+            const filtered = mockEmails.filter(email => 
+                email.subject.toLowerCase().includes(query.toLowerCase()) ||
+                email.sender.toLowerCase().includes(query.toLowerCase()) ||
+                email.content.toLowerCase().includes(query.toLowerCase()) ||
+                email.aiSummary.toLowerCase().includes(query.toLowerCase())
+            );
+
+            renderEmailListWithResults(filtered, query);
+        }
+
+        // Render search results
+        function renderEmailListWithResults(emails, query) {
+            const emailList = document.getElementById('emailList');
+            document.getElementById('emailCount').textContent = `${emails.length} results for "${query}"`;
+            
+            if (emails.length === 0) {
+                emailList.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #64748b;">
+                        <span style="font-size: 2rem;">🔍</span><br><br>
+                        No emails found for "${query}"<br>
+                        <small>Try different keywords or check spelling</small>
+                    </div>`;
+                return;
+            }
+
+            emailList.innerHTML = emails.map(email => {
+                const avatarLetter = email.sender.charAt(0).toUpperCase();
+                const avatarColor = getAvatarColor(email.sender);
+                
+                return `
+                    <div class="email-item ${email.unread ? 'unread' : ''}" data-id="${email.id}">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <div class="sender-avatar" style="background: ${avatarColor};">
+                                    ${avatarLetter}
+                                </div>
+                                <div>
+                                    <div>${highlightText(email.sender, query)}</div>
+                                    <div style="font-size: 0.75rem; font-weight: normal; color: #64748b;">${email.email}</div>
+                                </div>
+                            </div>
+                            <div class="email-time">
+                                <div>${email.time}</div>
+                                <div style="font-size: 0.7rem; color: #64748b;">${email.estimatedReadTime}</div>
+                            </div>
+                        </div>
+                        <div class="email-subject">${highlightText(email.subject, query)}</div>
+                        <div class="email-snippet">${highlightText(email.snippet, query)}</div>
+                        <div class="tags">
+                            ${email.tags.map(tag => `<span class="tag ${tag}">
+                                ${getTagIcon(tag)} ${capitalizeFirst(tag)}
+                            </span>`).join('')}
+                            <span class="tag ai-summary">🤖 AI Summary</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Highlight search text
+        function highlightText(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<mark style="background: #fef08a; padding: 0.125rem;">$1</mark>');
+        }
+
+        // Show email details with enhanced AI features
+        function showEmailDetail(emailId) {
+            const email = mockEmails.find(e => e.id === emailId);
+            if (!email) return;
+
+            selectedEmailId = emailId;
+            renderEmailList(); // Re-render to show selection
+
+            const emailDetail = document.getElementById('emailDetail');
+            const replies = quickReplies[emailId] || [];
+
+            // Get avatar details
+            const avatarLetter = email.sender.charAt(0).toUpperCase();
+            const avatarColor = getAvatarColor(email.sender);
+
+            emailDetail.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-sender">
+                        <div class="sender-avatar" style="background: ${avatarColor};">${avatarLetter}</div>
+                        <div>
+                            <div>${email.sender}</div>
+                            <div style="font-size: 0.85rem; font-weight: normal; color: #64748b; margin-top: 0.25rem;">${email.email}</div>
+                        </div>
+                    </div>
+                    <div class="detail-subject">${email.subject}</div>
+                    <div class="detail-meta">
+                        <div><strong>From:</strong> ${email.email}</div>
+                        <div><strong>Time:</strong> ${email.time}</div>
+                        <div><strong>Read time:</strong> ${email.estimatedReadTime}</div>
+                        <div class="tags" style="margin-top: 0.5rem;">
+                            ${email.tags.map(tag => `<span class="tag ${tag}">
+                                ${getTagIcon(tag)} ${capitalizeFirst(tag)}
+                            </span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ai-section">
+                    <h4>🤖 AI Assistant Analysis <span class="ai-badge">POWERED BY GPT-4</span></h4>
+                    
+                    <div class="ai-summary">
+                        <strong>📝 Smart Summary:</strong><br>
+                        ${email.aiSummary}
+                    </div>
+
+                    <div class="sentiment-analysis">
+                        <div class="sentiment-item">
+                            <div class="sentiment-score urgency-${email.urgency}">${email.urgency.toUpperCase()}</div>
+                            <div>Urgency Level</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="sentiment-score" style="color: #3b82f6;">${email.sentiment.toUpperCase()}</div>
+                            <div>Tone Analysis</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="sentiment-score" style="color: #10b981;">${email.keyPoints.length}</div>
+                            <div>Key Points</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <strong style="font-size: 0.85rem; color: #7c3aed; margin-bottom: 0.5rem; display: block;">🎯 Key Action Items:</strong>
+                        ${email.keyPoints.map(point => `
+                            <div style="font-size: 0.8rem; color: #4c1d95; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>•</span> ${point}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="quick-replies">
+                        <div class="quick-replies-header">
+                            <strong style="font-size: 0.85rem; color: #7c3aed;">⚡ AI-Generated Quick Replies:</strong>
+                            <button class="generate-more" onclick="generateMoreReplies(${email.id})" ${isGeneratingReplies ? 'disabled' : ''}>
+                                ${isGeneratingReplies ? '<span class="loading-spinner"></span>' : '🔄 Generate More'}
+                            </button>
+                        </div>
+                        <div id="quickRepliesList">
+                            ${replies.map(reply => `
+                                <div class="reply-suggestion" onclick="useQuickReply('${reply.text.replace(/'/g, "&#39;")}', '${reply.tone}')">
+                                    <div class="reply-tone">${reply.tone}</div>
+                                    ${reply.text}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="email-content">
+                    ${formatEmailContent(email.content)}
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="composeReply(${email.id})">
+                        ✏️ Reply with AI
+                    </button>
+                    <button class="btn btn-secondary" onclick="markAsRead(${email.id})">
+                        ✓ Mark as Read
+                    </button>
+                    <button class="btn btn-secondary" onclick="archiveEmail(${email.id})">
+                        📁 Archive
+                    </button>
+                    <button class="btn btn-secondary" onclick="scheduleEmail(${email.id})">
+                        ⏰ Schedule
+                    </button>
+                </div>
+            `;
+
+            // Mark email as read when opened
+            if (email.unread) {
+                setTimeout(() => {
+                    email.unread = false;
+                    renderEmailList();
+                    updateStats();
+                }, 500);
+            }
+        }
+
+        // Format email content with better styling
+        function formatEmailContent(content) {
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/^/, '<p>')
+                .replace(/$/, '</p>')
+                .replace(/•/g, '<span style="color: #3b82f6;">•</span>');
+        }
+
+        // Generate more AI replies
+        function generateMoreReplies(emailId) {
+            if (isGeneratingReplies) return;
+            
+            isGeneratingReplies = true;
+            const button = document.querySelector('.generate-more');
+            button.innerHTML = '<span class="loading-spinner"></span> Generating...';
+            
+            // Simulate AI generation delay
+            setTimeout(() => {
+                const additionalReplies = [
+                    { text: "I'll review this and get back to you with a detailed response by end of day.", tone: "professional" },
+                    { text: "Thanks for sharing this information. Let me discuss with my team and follow up.", tone: "collaborative" },
+                    { text: "This looks great! I have a few questions - can we set up a quick call?", tone: "engaging" }
+                ];
+                
+                const repliesList = document.getElementById('quickRepliesList');
+                additionalReplies.forEach(reply => {
+                    const replyDiv = document.createElement('div');
+                    replyDiv.className = 'reply-suggestion';
+                    replyDiv.onclick = () => useQuickReply(reply.text, reply.tone);
+                    replyDiv.innerHTML = `
+                        <div class="reply-tone">${reply.tone}</div>
+                        ${reply.text}
+                    `;
+                    repliesList.appendChild(replyDiv);
+                });
+                
+                isGeneratingReplies = false;
+                button.innerHTML = '✨ Generated!';
+                button.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    button.innerHTML = '🔄 Generate More';
+                    button.style.background = '#7c3aed';
+                    button.disabled = false;
+                }, 2000);
+            }, 1500);
+        }
+
+        // Use quick reply with tone indication
+        function useQuickReply(replyText, tone) {
+            showNotification(`Composing ${tone} reply...`, 'info');
+            
+            // Simulate opening compose window
+            setTimeout(() => {
+                alert(`📝 COMPOSE WINDOW (Demo)\n\nTone: ${tone.toUpperCase()}\n\nMessage:\n"${replyText}"\n\nIn a real application, this would:\n• Open the email compose interface\n• Pre-fill the reply with this text\n• Allow editing before sending\n• Track response metrics`);
+            }, 500);
+        }
+
+        // Enhanced compose reply with AI assistance
+        function composeReply(emailId) {
+            const email = mockEmails.find(e => e.id === emailId);
+            showNotification('Opening AI-powered compose window...', 'info');
+            
+            setTimeout(() => {
+                alert(`🤖 AI COMPOSE ASSISTANT (Demo)\n\nFor: ${email.subject}\n\nAI Features Available:\n• Smart reply suggestions\n• Tone adjustment (professional/casual/friendly)\n• Grammar and spelling check\n• Sentiment analysis\n• Schedule send options\n• Follow-up reminders\n\nIn a real app, this would open a full compose interface with AI assistance.`);
+            }, 500);
+        }
+
+        // Schedule email
+        function scheduleEmail(emailId) {
+            showNotification('Opening schedule options...', 'info');
+            alert('📅 SCHEDULE EMAIL (Demo)\n\nOptions available:\n• Send later today\n• Tomorrow morning\n• Next week\n• Custom date/time\n• Smart scheduling (best time for recipient)\n\nAI would suggest optimal send times based on recipient patterns.');
+        }
+
+        // Mark as read
+        function markAsRead(emailId) {
+            const email = mockEmails.find(e => e.id === emailId);
+            if (email) {
+                email.unread = false;
+                renderEmailList();
+                updateStats();
+                showNotification('Email marked as read!', 'success');
+            }
+        }
+
+        // Archive email
+        function archiveEmail(emailId) {
+            showNotification('Email archived successfully!', 'success');
+            // In a real app, this would move the email to archive
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                color: white;
+                font-weight: 500;
+                z-index: 1001;
+                animation: slideIn 0.3s ease-out;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            
+            const colors = {
+                info: '#3b82f6',
+                success: '#10b981',
+                warning: '#f59e0b',
+                error: '#ef4444'
+            };
+            
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Filter buttons with enhanced feedback
+            document.querySelectorAll('.filter-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentFilter = item.dataset.filter;
+                    renderEmailList();
+                    
+                    // Clear email detail view when switching filters
+                    selectedEmailId = null;
+                    document.getElementById('emailDetail').innerHTML = `
+                        <div class="detail-placeholder">
+                            <span style="font-size: 4rem;">📧</span>
+                            <h3 style="margin: 1rem 0; color: #3b82f6;">Filter: ${capitalizeFirst(currentFilter)}</h3>
+                            <p style="margin-bottom: 1rem;"><strong>Select an email to see AI analysis:</strong></p>
+                            <ul style="text-align: left; margin: 1rem 0; color: #64748b; list-style: none;">
+                                <li style="margin-bottom: 0.5rem;">🧠 Intelligent email summaries</li>
+                                <li style="margin-bottom: 0.5rem;">⚡ Smart quick reply suggestions</li>
+                                <li style="margin-bottom: 0.5rem;">🎯 Automatic priority detection</li>
+                                <li style="margin-bottom: 0.5rem;">📊 Sentiment & tone analysis</li>
+                                <li style="margin-bottom: 0.5rem;">🏷️ Auto-categorization</li>
+                                <li style="margin-bottom: 0.5rem;">⏰ Smart scheduling suggestions</li>
+                            </ul>
+                            <p style="font-size: 0.9rem; color: #64748b;">
+                                <em>This interactive demo showcases advanced AI email management capabilities</em>
+                            </p>
+                        </div>
+                    `;
+                    
+                    showNotification(`Filtered to ${capitalizeFirst(currentFilter)} emails`, 'info');
+                });
+            });
+
+            // Enhanced search with real-time feedback
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value;
+                
+                if (query.length === 0) {
+                    renderEmailList();
+                    return;
+                }
+                
+                // Add visual feedback during search
+                searchInput.style.background = '#fef3c7';
+                
+                searchTimeout = setTimeout(() => {
+                    searchEmails(query);
+                    searchInput.style.background = '#f9fafb';
+                    
+                    if (query.length > 0) {
+                        showNotification(`Found ${document.querySelectorAll('.email-item').length} results`, 'info');
+                    }
+                }, 300);
+            });
+
+            // Email click handlers with enhanced feedback
+            document.getElementById('emailList').addEventListener('click', (e) => {
+                const emailItem = e.target.closest('.email-item');
+                if (emailItem) {
+                    const emailId = parseInt(emailItem.dataset.id);
+                    
+                    // Add loading state
+                    emailItem.style.opacity = '0.7';
+                    showNotification('Loading AI analysis...', 'info');
+                    
+                    setTimeout(() => {
+                        showEmailDetail(emailId);
+                        emailItem.style.opacity = '1';
+                    }, 500);
+                }
+            });
+
+            // Bulk action handlers
+            document.querySelectorAll('.bulk-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.textContent.toLowerCase();
+                    showNotification(`Bulk ${action} action triggered!`, 'info');
+                    
+                    if (action.includes('select')) {
+                        // Simulate selecting all emails
+                        document.querySelectorAll('.email-item').forEach(item => {
+                            item.style.background = '#eff6ff';
+                        });
+                        btn.textContent = 'Deselect All';
+                    } else {
+                        // Reset selection
+                        document.querySelectorAll('.email-item').forEach(item => {
+                            item.style.background = '';
+                        });
+                        document.querySelector('.bulk-btn').textContent = 'Select All';
+                    }
+                });
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    switch (e.key) {
+                        case 'k':
+                            e.preventDefault();
+                            searchInput.focus();
+                            break;
+                        case 'r':
+                            e.preventDefault();
+                            if (selectedEmailId) {
+                                composeReply(selectedEmailId);
+                            }
+                            break;
+                    }
+                }
+            });
+
+            // Add tooltips for better UX
+            addTooltips();
+        }
+
+        // Add interactive tooltips
+        function addTooltips() {
+            const tooltip = document.getElementById('tooltip');
+            
+            document.addEventListener('mouseover', (e) => {
+                if (e.target.matches('.filter-item')) {
+                    const filterType = e.target.dataset.filter;
+                    const tooltipTexts = {
+                        all: 'View all emails in your inbox',
+                        unread: 'Show only unread emails',
+                        priority: 'High-importance emails detected by AI',
+                        work: 'Business and professional emails',
+                        personal: 'Personal emails from friends and family',
+                        promotion: 'Marketing and promotional emails'
+                    };
+                    
+                    showTooltip(e, tooltipTexts[filterType] || 'Email filter');
+                } else if (e.target.matches('.tag.ai-summary')) {
+                    showTooltip(e, 'AI-generated summary of email content');
+                } else if (e.target.matches('.generate-more')) {
+                    showTooltip(e, 'Generate additional AI reply suggestions');
+                } else if (e.target.matches('.reply-suggestion')) {
+                    showTooltip(e, 'Click to use this AI-generated reply');
+                }
+            });
+            
+            document.addEventListener('mouseout', () => {
+                tooltip.classList.remove('show');
+            });
+        }
+
+        // Show tooltip
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 30 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        // Utility function
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(300px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(300px); opacity: 0; }
+            }
+            
+            .email-item {
+                animation: fadeInUp 0.3s ease-out;
+            }
+            
+            @keyframes fadeInUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Demo tour function
+        function startDemoTour() {
+            const steps = [
+                { element: '.logo', text: 'Welcome to InboxPilot - Your AI Email Assistant!' },
+                { element: '.search-input', text: 'Search emails with natural language' },
+                { element: '.ai-insights', text: 'Real-time AI insights about your inbox' },
+                { element: '.email-item:first-child', text: 'Click any email to see AI analysis' },
+                { element: '.tag.ai-summary', text: 'Every email gets an AI summary' }
+            ];
+            
+            // Implementation would show guided tour
+            showNotification('Demo tour would start here in full version!', 'info');
+        }
+
+        // Add demo tour trigger
+        setTimeout(() => {
+            if (localStorage.getItem('inboxpilot-tour') !== 'completed') {
+                // Auto-start demo tour after 3 seconds
+                // startDemoTour();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>Budget meeting follow-up with 3 urgent action items due Friday: marketing budget revision ($), IT hardware estimates, and HR headcount planning. Key decisions: 15% marketing budget increase, hiring freeze until January, cloud costs 12% over budget.",
+                urgency: "high",
+                sentiment: "professional",
+                keyPoints: ["Budget deadline Friday", "15% marketing increase", "Hiring freeze until Jan"],
+                estimatedReadTime: "2 min"
+            },
+            {
+                id: 2,
+                sender: "Netflix",
+                email: "recommendations@netflix.com",
+                subject: "🎬 New releases this week you might enjoy",
+                snippet: "Based on your viewing history and preferences, here are some personalized recommendations we think you'll love. Plus, check out our new interactive features...",
+                time: "4h ago",
+                content: `Hi there!
+
+Based on your viewing history and preferences, here are some new releases we think you'll love:
+
+🎭 **NEW SERIES**
+• "The Crown" Season 6 - Final season now streaming
+• "Stranger Things: Behind the Upside Down" - Exclusive documentary  
+• "Wednesday" Season 2 - Coming January 2024
+
+🍽️ **FOOD & LIFESTYLE**
+• "Chef's Table: Pasta" - New episodes featuring Italian masters
+• "Queer Eye" Season 8 - Feel-good transformations
+
+🎬 **MOVIES THIS WEEK**
+• "The Glass Onion 2" - Knives Out sequel
+• "Red Notice 2" - Action-packed continuation
+
+**NEW FEATURE:** Try our AI-powered "Skip Intro" suggestions and personalized episode recommendations!
+
+Happy watching!
+The Netflix Team
+
+P.S. Don't forget to rate shows you've watched - it helps us recommend better content!`,
+                tags: ["promotion"],
+                unread: false,
+                aiSummary: "Netflix weekly recommendations featuring The Crown finale, Stranger Things documentary, Chef's Table pasta episodes, and new AI-powered viewing features. Personalized content based on viewing history.",
+                urgency: "low",
+                sentiment: "friendly",
+                keyPoints: ["Crown finale available", "New AI features", "Personalized recommendations"],
+                estimatedReadTime: "1 min"
+            },
+            {
+                id: 3,
+                sender: "Mom",
+                email: "linda.johnson@gmail.com",
+                subject: "Family dinner this Sunday - Can you bring salad? 🥗",
+                snippet: "Hi honey! Just wanted to remind you about our family dinner this Sunday at 6 PM. Your dad is making his famous three-layer lasagna...",
+                time: "6h ago",
+                content: `Hi honey! 👋
+
+Just wanted to remind you about our family dinner this Sunday at 6 PM. Your dad has been preparing his famous three-layer lasagna since yesterday (you know how seriously he takes his cooking!).
+
+**Sunday Dinner Details:**
+• Time: 6:00 PM
+• Location: Our house (obviously! 😊)
+• Main dish: Dad's legendary lasagna
+• Dessert: Your sister is bringing her homemade tiramisu
+
+**Could you please bring:**
+- A large Caesar salad (the one with those croutons you make)
+- Maybe some garlic bread if you have time?
+
+Also, your cousin Mike is flying in from Portland and will join us! He's excited to see everyone and hear about your new job.
+
+Can you please let me know by Saturday if you're still coming? I need to set the table accordingly.
+
+Looking forward to seeing you and catching up properly! It's been too long since we had the whole family together.
+
+Love you lots,
+Mom ❤️
+
+P.S. - Don't forget to bring those photos from your vacation! Dad wants to see them.`,
+                tags: ["personal"],
+                unread: true,
+                aiSummary: "
